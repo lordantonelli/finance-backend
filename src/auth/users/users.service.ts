@@ -1,4 +1,4 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { BaseService } from 'src/shared/services/base.service';
 import { User } from './entities/user.entity';
 import { DeepPartial, FindOptionsWhere, ILike, Repository } from 'typeorm';

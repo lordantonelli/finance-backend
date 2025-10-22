@@ -24,7 +24,7 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Category } from './entities/category.entity';
 import { FindOptionsWhere, ILike } from 'typeorm';
 import { isDefined, isNotEmpty } from 'class-validator';
-import { QueryActiveListDto } from './dto/query-active-list.dto';
+import { QueryTypeListDto } from './dto/query-type-list.dto';
 
 @ApiTags('Categories')
 @ApiBearerAuth('access-token')
@@ -41,7 +41,7 @@ export class CategoriesController {
 
   @ApiPaginatedResponse(Category)
   @Get()
-  findAll(@Query() query: QueryActiveListDto) {
+  findAll(@Query() query: QueryTypeListDto) {
     return this.categoriesService.findAll(query, this.searchCondition);
   }
 
@@ -69,7 +69,7 @@ export class CategoriesController {
 
   private searchCondition = (
     search: string,
-    query: QueryActiveListDto,
+    query: QueryTypeListDto,
   ): FindOptionsWhere<Category>[] => {
     const condition = {};
     if (isNotEmpty(search)) condition['name'] = ILike(`%${search}%`);
