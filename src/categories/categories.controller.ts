@@ -18,21 +18,22 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { ApiPaginatedResponse, IsPublic } from '@shared/decorators';
+import { ApiPaginatedResponse, FilterByOwner } from '@shared/decorators';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { QueryListDto } from '@shared/dto/query-list.dto';
 import { Category } from './entities/category.entity';
-import { CategoryType } from './entities/category-type.enum';
+import { FindOptionsWhere, ILike } from 'typeorm';
+import { isDefined, isNotEmpty } from 'class-validator';
+import { QueryActiveListDto } from './dto/query-active-list.dto';
 
 @ApiTags('Categories')
 @ApiBearerAuth('access-token')
 @Controller('categories')
+@FilterByOwner()
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @ApiCreatedResponse({ type: Category })
-  @IsPublic()
   @Post()
   create(@Body() createCategoryDto: CreateCategoryDto) {
     return this.categoriesService.create(createCategoryDto);
@@ -40,24 +41,8 @@ export class CategoriesController {
 
   @ApiPaginatedResponse(Category)
   @Get()
-  findAll(@Query() query: QueryListDto) {
-    return this.categoriesService.findAll(query);
-  }
-
-  @ApiPaginatedResponse(Category)
-  @Get('income')
-  findIncomeAll(@Query() query: QueryListDto) {
-    return this.categoriesService.findAll(query, [
-      { type: CategoryType.INCOME },
-    ]);
-  }
-
-  @ApiPaginatedResponse(Category)
-  @Get('expense')
-  findExpenseAll(@Query() query: QueryListDto) {
-    return this.categoriesService.findAll(query, [
-      { type: CategoryType.EXPENSE },
-    ]);
+  findAll(@Query() query: QueryActiveListDto) {
+    return this.categoriesService.findAll(query, this.searchCondition);
   }
 
   @ApiOkResponse({ type: Category })
@@ -81,4 +66,18 @@ export class CategoriesController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.categoriesService.remove(id);
   }
+
+  private searchCondition = (
+    search: string,
+    query: QueryActiveListDto,
+  ): FindOptionsWhere<Category>[] => {
+    const condition = {};
+    if (isNotEmpty(search)) condition['name'] = ILike(`%${search}%`);
+
+    if (isDefined(query.active)) condition['active'] = query.active;
+
+    if (isDefined(query.type)) condition['type'] = query.type;
+
+    return [condition];
+  };
 }

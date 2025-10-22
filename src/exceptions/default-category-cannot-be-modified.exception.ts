@@ -1,9 +1,9 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 
-export class RecipeIsNotPublishedException extends HttpException {
+export class DefaultCategoryCannotBeModified extends HttpException {
   constructor() {
     super(
-      'The recipe has not been published yet',
+      'Default categories cannot be modified.',
       HttpStatus.PRECONDITION_FAILED,
     );
   }

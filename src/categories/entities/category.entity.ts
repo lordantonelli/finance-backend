@@ -13,7 +13,7 @@ import { UserBaseEntity } from '@shared/entities/user-base.entity';
 @Tree('closure-table')
 @Unique(['name', 'type', 'user', 'parent'])
 export class Category extends UserBaseEntity {
-  @Column({ unique: true })
+  @Column()
   name: string;
 
   @Column()

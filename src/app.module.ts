@@ -30,6 +30,6 @@ import { TransactionsModule } from './transactions/transactions.module';
     TransactionsModule,
   ],
   controllers: [],
-  //providers: [{ provide: APP_GUARD, useClass: JwtAuthGuard }],
+  providers: [{ provide: APP_GUARD, useClass: JwtAuthGuard }],
 })
 export class AppModule {}

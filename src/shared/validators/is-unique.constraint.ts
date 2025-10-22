@@ -18,7 +18,7 @@ export interface UniqueValidationArguments<E> extends ValidationArguments {
   ];
 }
 
-@ValidatorConstraint({ name: 'IsUniqueConstraint', async: true })
+@ValidatorConstraint({ name: 'isUnique', async: true })
 @Injectable()
 export class IsUniqueConstraint implements ValidatorConstraintInterface {
   constructor(private readonly entityManager: EntityManager) {}
@@ -30,6 +30,14 @@ export class IsUniqueConstraint implements ValidatorConstraintInterface {
     // catch options from decorator
     const [EntityClass, findCondition = args.property] = args.constraints;
 
+    if (Array.isArray(findCondition))
+      console.log(
+        findCondition.reduce((acc, curr) => {
+          acc[curr] = args.object[curr];
+          return acc;
+        }, {} as FindOptionsWhere<E>),
+      );
+
     // database query check data is exists
     const count = await this.entityManager.getRepository(EntityClass).count({
       where:
@@ -37,13 +45,16 @@ export class IsUniqueConstraint implements ValidatorConstraintInterface {
           ? findCondition(args.object)
           : Array.isArray(findCondition)
             ? findCondition.reduce((acc, curr) => {
-                acc[curr] = args.object[curr];
+                if (typeof args.object[curr] === 'object')
+                  acc[curr] = { id: (args.object[curr] as any)?.id };
+                else acc[curr] = args.object[curr];
                 return acc;
               }, {} as FindOptionsWhere<E>)
             : {
                 [findCondition || args.property]: value,
               },
     });
+    console.log(count);
     return count == 0;
   }
 

@@ -10,7 +10,7 @@ export interface ExistsValidationArguments<E> extends ValidationArguments {
   constraints: [ObjectType<E> | EntitySchema<E> | string];
 }
 
-@ValidatorConstraint({ name: 'ExistsConstraint', async: true })
+@ValidatorConstraint({ name: 'exists', async: true })
 @Injectable()
 export class ExistsConstraint implements ValidatorConstraintInterface {
   constructor(private readonly entityManager: EntityManager) {}

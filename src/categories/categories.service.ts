@@ -1,29 +1,26 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Scope } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from './entities/category.entity';
 import { BaseService } from '@shared/services/base.service';
-import { FindOptionsWhere, ILike, Repository } from 'typeorm';
-import { QueryListDto } from '@shared/dto/query-list.dto';
-import { Pagination } from 'nestjs-typeorm-paginate';
-import { RepositoryUtils } from '@shared/utils/repository.utils';
+import { AppContextService } from '@shared/services/app-context.service';
+import { Repository } from 'typeorm';
+import { DefaultCategoryCannotBeModified } from '@exceptions/default-category-cannot-be-modified.exception';
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class CategoriesService extends BaseService<Category> {
   constructor(
     @InjectRepository(Category)
     protected readonly repository: Repository<Category>,
+    protected appContext: AppContextService,
   ) {
-    super(repository);
+    super(repository, appContext);
   }
 
-  getSearchCondition(
-    search: string | undefined,
-    where: FindOptionsWhere<Category>[] = [],
-  ): FindOptionsWhere<Category>[] {
-    if (search) {
-      const ilike = ILike(`%${search}%`);
-      where.push({ name: ilike });
+  async update(id: number, updateDto: Partial<Category>): Promise<Category> {
+    const record = await this.findOne(id);
+    if (record.isDefault) {
+      throw new DefaultCategoryCannotBeModified();
     }
-    return where;
+    return super.update(id, updateDto);
   }
 }
