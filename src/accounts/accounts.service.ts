@@ -4,6 +4,7 @@ import { Account } from './entities/account.entity';
 import { AppContextService } from '@shared/services/app-context.service';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { AccountHasTransactionsException } from '@exceptions/account-has-transactions.exception';
 
 @Injectable({ scope: Scope.REQUEST })
 export class AccountsService extends BaseService<Account> {
@@ -13,5 +14,31 @@ export class AccountsService extends BaseService<Account> {
     protected appContext: AppContextService,
   ) {
     super(repository, appContext);
+  }
+
+  async update(id: number, updateDto: Partial<Account>): Promise<Account> {
+    const account = await this.repository.findOne({
+      where: { id },
+      relations: ['transactions'],
+    });
+
+    if (account && account.transactions && account.transactions.length > 0) {
+      delete updateDto.initialBalance;
+    }
+
+    return super.update(id, updateDto);
+  }
+
+  async remove(id: number): Promise<void> {
+    const account = await this.repository.findOne({
+      where: { id },
+      relations: ['transactions'],
+    });
+
+    if (account && account.transactions && account.transactions.length > 0) {
+      throw new AccountHasTransactionsException();
+    }
+
+    await super.remove(id);
   }
 }

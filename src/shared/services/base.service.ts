@@ -19,6 +19,8 @@ export abstract class BaseService<Entity extends ObjectLiteral> {
     protected readonly repository: Repository<Entity>,
     protected appContext: AppContextService,
   ) {
+    console.log(this.repository);
+
     const primaryColumns = this.repository.metadata.primaryColumns;
     if (primaryColumns.length === 0) {
       throw new Error('Entity does not have a primary column defined');
@@ -60,7 +62,7 @@ export abstract class BaseService<Entity extends ObjectLiteral> {
         where.push({ user: { id: this.currentUserId } } as any);
       } else {
         where.forEach((condition) => {
-          (condition as any).user = { id: this.currentUserId };
+          (condition as Record<string, any>).user = { id: this.currentUserId };
         });
       }
     }
@@ -78,13 +80,13 @@ export abstract class BaseService<Entity extends ObjectLiteral> {
   }
 
   async update(id: number, updateDto: Partial<Entity>): Promise<Entity> {
-    this.findOne(id);
+    await this.findOne(id);
     await this.repository.update(id, updateDto);
     return this.findOne(id);
   }
 
   async remove(id: number): Promise<void> {
-    this.findOne(id);
+    await this.findOne(id);
     await this.repository.delete(id);
   }
 }

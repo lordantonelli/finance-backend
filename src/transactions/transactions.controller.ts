@@ -22,13 +22,18 @@ import {
 } from '@nestjs/swagger';
 import { Transaction } from './entities/transaction.entity';
 import { ApiPaginatedResponse } from '@shared/decorators';
-import { QueryListDto } from '@shared/dto/query-list.dto';
-import { FindOptionsWhere, ILike } from 'typeorm';
-import { isNotEmpty } from 'class-validator';
+import {
+  FindOptionsWhere,
+  ILike,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+} from 'typeorm';
+import { isDefined, isNotEmpty } from 'class-validator';
+import { TransactionQueryListDto } from './dto/transaction-query-list.dto';
 
 @ApiTags('Accounts')
 @ApiBearerAuth('access-token')
-@Controller('accounts/:accountId/transactions')
+@Controller('transactions')
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
@@ -40,7 +45,7 @@ export class TransactionsController {
 
   @ApiPaginatedResponse(Transaction)
   @Get()
-  findAll(@Query() query: QueryListDto) {
+  findAll(@Query() query: TransactionQueryListDto) {
     return this.transactionsService.findAll(query, this.searchCondition);
   }
 
@@ -68,9 +73,25 @@ export class TransactionsController {
 
   private searchCondition = (
     search: string,
+    query: TransactionQueryListDto,
   ): FindOptionsWhere<Transaction>[] => {
     const condition = {};
     if (isNotEmpty(search)) condition['name'] = ILike(`%${search}%`);
+
+    if (isDefined(query.category) || isDefined(query.type)) {
+      const categoryCondition = {};
+      if (isDefined(query.category)) categoryCondition['id'] = query.category;
+      if (isDefined(query.type)) categoryCondition['type'] = query.type;
+      condition['category'] = categoryCondition;
+    }
+
+    if (isDefined(query.account)) condition['account'] = { id: query.account };
+
+    if (isDefined(query.initialDate))
+      condition['date'] = MoreThanOrEqual(query.initialDate);
+
+    if (isDefined(query.finalDate))
+      condition['date'] = LessThanOrEqual(query.finalDate);
 
     return [condition];
   };

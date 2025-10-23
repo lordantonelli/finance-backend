@@ -5,12 +5,14 @@ import { DeepPartial, FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AppContextService } from '@shared/services/app-context.service';
 import { RecordNotFoundException } from '@exceptions';
+import { CategoriesService } from 'src/categories/categories.service';
 
 @Injectable()
 export class UsersService extends BaseService<User> {
   constructor(
     @InjectRepository(User) protected readonly repository: Repository<User>,
     protected appContext: AppContextService,
+    private readonly categoriesService: CategoriesService,
   ) {
     super(repository, {} as AppContextService);
   }
@@ -19,6 +21,10 @@ export class UsersService extends BaseService<User> {
     const record = this.repository.create(createDto);
     const user = await this.repository.save(record);
     delete user.password; // Remove password from the response
+
+    // Criar categorias padrão para o novo usuário
+    await this.categoriesService.createDefaults(user);
+
     return user;
   }
 
