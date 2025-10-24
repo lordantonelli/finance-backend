@@ -1,9 +1,10 @@
 import { BaseEntity } from '@shared/entities/base.entity';
 import { Account } from 'src/accounts/entities/account.entity';
-import { Category } from 'src/categories/entities/category.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, ManyToOne } from 'typeorm';
+import { Column, Entity, ManyToOne, TableInheritance } from 'typeorm';
 
+@Entity()
+@TableInheritance({ column: { type: 'varchar', name: 'type' } })
 export class Transaction extends BaseEntity {
   @ApiProperty({
     description: 'The account associated with the transaction',
@@ -29,11 +30,4 @@ export class Transaction extends BaseEntity {
   })
   @Column()
   description: string;
-
-  @ApiProperty({
-    description: 'The category associated with the transaction',
-    type: () => Category,
-  })
-  @ManyToOne(() => Category, { eager: true })
-  category: Category;
 }

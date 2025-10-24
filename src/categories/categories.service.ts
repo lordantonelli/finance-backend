@@ -9,7 +9,6 @@ import { CategoryHasTransactionsException } from '@exceptions/category-has-trans
 import { User } from 'src/auth/users/entities/user.entity';
 import { CategoryType } from './entities/category-type.enum';
 import { TransactionsService } from '../transactions/transactions.service';
-import { QueryListDto } from '@shared/dto/query-list.dto';
 
 @Injectable()
 export class CategoriesService extends BaseService<Category> {
@@ -40,12 +39,11 @@ export class CategoriesService extends BaseService<Category> {
     }
 
     // Verifica se há transações associadas à categoria
-    const transactions = await this.transactionsService.findAll(
-      { page: 1, limit: 1 } as QueryListDto,
-      () => [{ category: { id } }],
-    );
+    const transactions = await this.transactionsService
+      .getRepository()
+      .countBy({ category: { id } });
 
-    if (transactions.meta.itemCount > 0) {
+    if (transactions > 0) {
       throw new CategoryHasTransactionsException();
     }
 

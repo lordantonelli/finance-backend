@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNumber, IsOptional, Min } from 'class-validator';
+import { IsIn, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 import { IPaginationOptions } from 'nestjs-typeorm-paginate';
 import { QuerySearchDto } from './query-search.dto';
 
@@ -15,4 +15,21 @@ export class QueryListDto extends QuerySearchDto implements IPaginationOptions {
   @Min(1)
   @IsOptional()
   limit: number = 10;
+
+  @ApiPropertyOptional({
+    description: 'Field name to order by',
+    example: 'date',
+  })
+  @IsString()
+  @IsOptional()
+  orderBy?: string;
+
+  @ApiPropertyOptional({
+    description: 'Ordering direction',
+    enum: ['ASC', 'DESC'],
+    example: 'DESC',
+  })
+  @IsIn(['ASC', 'DESC'])
+  @IsOptional()
+  order?: 'ASC' | 'DESC';
 }

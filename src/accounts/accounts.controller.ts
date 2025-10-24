@@ -23,7 +23,7 @@ import {
 } from '@nestjs/swagger';
 import { Account } from './entities/account.entity';
 import { QueryActiveListDto } from '@shared/dto/query-active-list.dto';
-import { FindOptionsWhere, ILike } from 'typeorm';
+import { FindManyOptions, ILike } from 'typeorm';
 import { isDefined, isNotEmpty } from 'class-validator';
 
 @ApiTags('Accounts')
@@ -70,12 +70,12 @@ export class AccountsController {
   private searchCondition = (
     search: string,
     query: QueryActiveListDto,
-  ): FindOptionsWhere<Account>[] => {
-    const condition = {};
-    if (isNotEmpty(search)) condition['name'] = ILike(`%${search}%`);
+  ): FindManyOptions<Account> => {
+    const where = {};
+    if (isNotEmpty(search)) where['name'] = ILike(`%${search}%`);
 
-    if (isDefined(query.active)) condition['active'] = query.active;
+    if (isDefined(query.active)) where['active'] = query.active;
 
-    return [condition];
+    return { where };
   };
 }

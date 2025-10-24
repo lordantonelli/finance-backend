@@ -3,14 +3,9 @@ import { QueryListDto } from '@shared/dto/query-list.dto';
 import { CategoryType } from '../../categories/entities/category-type.enum';
 import { Account } from 'src/accounts/entities/account.entity';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsDateString,
-  IsEnum,
-  IsInt,
-  IsOptional,
-  IsPositive,
-} from 'class-validator';
+import { IsDate, IsEnum, IsInt, IsOptional, IsPositive } from 'class-validator';
 import { Type } from 'class-transformer';
+import { StartBeforeOrEqualEnd } from '@shared/decorators';
 
 export class TransactionQueryListDto extends QueryListDto {
   @ApiPropertyOptional({
@@ -31,8 +26,8 @@ export class TransactionQueryListDto extends QueryListDto {
     example: '2024-01-01',
   })
   @IsOptional()
-  @IsDateString()
-  initialDate?: Date;
+  @IsDate()
+  startDate?: Date;
 
   @ApiPropertyOptional({
     description: 'Filter by final date',
@@ -41,8 +36,9 @@ export class TransactionQueryListDto extends QueryListDto {
     example: '2024-12-31',
   })
   @IsOptional()
-  @IsDateString()
-  finalDate?: Date;
+  @IsDate()
+  @StartBeforeOrEqualEnd('startDate', 'date')
+  endDate?: Date;
 
   @ApiPropertyOptional({
     description: 'Filter by type of transaction: income or expense',

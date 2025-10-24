@@ -10,14 +10,12 @@ import {
   HttpCode,
   Query,
 } from '@nestjs/common';
-import { TransactionsService } from './transactions.service';
-import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
 import { Transaction } from './entities/transaction.entity';
@@ -30,17 +28,44 @@ import {
 } from 'typeorm';
 import { isDefined, isNotEmpty } from 'class-validator';
 import { TransactionQueryListDto } from './dto/transaction-query-list.dto';
+import { CreateTransferDto } from './dto/create-transfer.dto';
+import { UpdateTransferDto } from './dto/update-transfer.dto';
+import { TransferTransaction } from './entities/transfer-transaction.entity';
+import { TransferTransactionsService } from './transfer-transactions.service';
 
 @ApiTags('Transactions')
 @ApiBearerAuth('access-token')
-@Controller('transactions')
-export class TransactionsController {
-  constructor(private readonly transactionsService: TransactionsService) {}
+@Controller('transactions/transfer')
+export class TransferTransactionsController {
+  constructor(
+    private readonly transactionsService: TransferTransactionsService,
+  ) {}
 
-  @ApiCreatedResponse({ type: Transaction })
+  @ApiOperation({
+    summary: 'Create a transfer between accounts',
+    description:
+      'Creates a transfer transaction moving funds from one account to another. Both accounts must belong to the authenticated user.',
+  })
+  @ApiCreatedResponse({
+    description: 'Transfer created successfully',
+    type: TransferTransaction,
+  })
   @Post()
-  create(@Body() createTransactionDto: CreateTransactionDto) {
-    return this.transactionsService.create(createTransactionDto);
+  create(@Body() createTransferDto: CreateTransferDto) {
+    return this.transactionsService.create(createTransferDto);
+  }
+
+  @ApiOperation({ summary: 'Update a transfer between accounts' })
+  @ApiOkResponse({
+    description: 'Transfer updated successfully',
+    type: TransferTransaction,
+  })
+  @Patch(':id')
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateTransferDto: UpdateTransferDto,
+  ) {
+    return this.transactionsService.update(id, updateTransferDto);
   }
 
   @ApiPaginatedResponse(Transaction)
@@ -55,19 +80,11 @@ export class TransactionsController {
     return this.transactionsService.findOne(id);
   }
 
-  @ApiOkResponse({ type: Transaction })
-  @Patch(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateTransactionDto: UpdateTransactionDto,
-  ) {
-    return this.transactionsService.update(id, updateTransactionDto);
-  }
-
+  @ApiOperation({ summary: 'Delete a transfer between accounts' })
   @ApiNoContentResponse({ description: 'No content' })
   @Delete(':id')
   @HttpCode(204)
-  remove(@Param('id', ParseIntPipe) id: number) {
+  removeTransfer(@Param('id', ParseIntPipe) id: number) {
     return this.transactionsService.remove(id);
   }
 
@@ -77,13 +94,6 @@ export class TransactionsController {
   ): FindManyOptions<Transaction> => {
     const where = {};
     if (isNotEmpty(search)) where['name'] = ILike(`%${search}%`);
-
-    if (isDefined(query.category) || isDefined(query.type)) {
-      const categoryCondition = {};
-      if (isDefined(query.category)) categoryCondition['id'] = query.category;
-      if (isDefined(query.type)) categoryCondition['type'] = query.type;
-      where['category'] = categoryCondition;
-    }
 
     if (isDefined(query.account)) where['account'] = { id: query.account };
 

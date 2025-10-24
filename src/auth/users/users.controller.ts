@@ -39,7 +39,7 @@ export class UsersController {
   @Get()
   findAll(@Query() query: QueryListDto) {
     return this.usersService.findAll(query, (search) => {
-      return [{ name: `%${search}%` }, { email: `%${search}%` }];
+      return { where: [{ name: `%${search}%` }, { email: `%${search}%` }] };
     });
   }
 

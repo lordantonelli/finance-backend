@@ -1,0 +1,10 @@
+{
+    "configurations": [
+        {
+            "type": "msedge",
+            "name": " ws://127.0.0.1:9229/85c699bb-1479-44cd-aa33-291ce62c7679",
+            "request": "launch",
+            "url": " ws://127.0.0.1:9229/85c699bb-1479-44cd-aa33-291ce62c7679"
+        }
+    ]
+}

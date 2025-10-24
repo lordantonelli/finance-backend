@@ -10,6 +10,7 @@ import { SharedModule } from '@shared/shared.module';
 import { AccountsModule } from './accounts/accounts.module';
 import { CategoriesModule } from './categories/categories.module';
 import { TransactionsModule } from './transactions/transactions.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -19,15 +20,22 @@ import { TransactionsModule } from './transactions/transactions.module';
       database: 'database/finance.db',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
+      logging: true,
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'upload'),
+      rootPath: join(__dirname, '..', 'public'),
     }),
+    // // Serve Swagger UI themes copied to dist via Nest assets config
+    // ServeStaticModule.forRoot({
+    //   rootPath: join(__dirname, '..', 'swagger-ui-themes', 'themes', '3.x'),
+    //   serveRoot: '/swagger-ui-themes/themes/3.x',
+    // }),
     SharedModule,
     AuthModule,
     AccountsModule,
     CategoriesModule,
     TransactionsModule,
+    ReportsModule,
   ],
   controllers: [],
   providers: [{ provide: APP_GUARD, useClass: JwtAuthGuard }],

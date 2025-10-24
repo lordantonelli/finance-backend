@@ -22,7 +22,7 @@ import { ApiPaginatedResponse, FilterByOwner } from '@shared/decorators';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Category } from './entities/category.entity';
-import { FindOptionsWhere, ILike } from 'typeorm';
+import { FindManyOptions, ILike } from 'typeorm';
 import { isDefined, isNotEmpty } from 'class-validator';
 import { QueryTypeListDto } from './dto/query-type-list.dto';
 
@@ -70,14 +70,14 @@ export class CategoriesController {
   private searchCondition = (
     search: string,
     query: QueryTypeListDto,
-  ): FindOptionsWhere<Category>[] => {
-    const condition = {};
-    if (isNotEmpty(search)) condition['name'] = ILike(`%${search}%`);
+  ): FindManyOptions<Category> => {
+    const where = {};
+    if (isNotEmpty(search)) where['name'] = ILike(`%${search}%`);
 
-    if (isDefined(query.active)) condition['active'] = query.active;
+    if (isDefined(query.active)) where['active'] = query.active;
 
-    if (isDefined(query.type)) condition['type'] = query.type;
+    if (isDefined(query.type)) where['type'] = query.type;
 
-    return [condition];
+    return { where };
   };
 }

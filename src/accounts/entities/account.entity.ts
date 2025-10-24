@@ -1,8 +1,11 @@
-import { BeforeInsert, Column, OneToMany } from 'typeorm';
+import { BeforeInsert, Column, Entity, OneToMany, Unique } from 'typeorm';
 import { UserBaseEntity } from '../../shared/entities/user-base.entity';
 import { AccountType } from './account-type.enum';
 import { Transaction } from 'src/transactions/entities/transaction.entity';
 import { ApiProperty } from '@nestjs/swagger';
+
+@Entity()
+@Unique(['name', 'user'])
 export class Account extends UserBaseEntity {
   @ApiProperty({ description: 'Name of the account' })
   @Column()

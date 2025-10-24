@@ -10,7 +10,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Category } from '../entities/category.entity';
-import { IsUnique } from '@shared/decorators';
+import { ExistsAndBelongsToUser, IsUnique } from '@shared/decorators';
 import { Type } from 'class-transformer';
 import { RelationEntityDto } from '@shared/dto/relation-entity.dto';
 import { CategoryType } from '../entities/category-type.enum';
@@ -43,5 +43,6 @@ export class CreateCategoryDto {
   @Type(() => RelationEntityDto)
   @IsObject()
   @IsOptional()
+  @ExistsAndBelongsToUser(Category)
   parent?: Category;
 }

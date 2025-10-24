@@ -9,5 +9,6 @@ import { SharedModule } from '@shared/shared.module';
   imports: [TypeOrmModule.forFeature([Account]), SharedModule],
   controllers: [AccountsController],
   providers: [AccountsService],
+  exports: [AccountsService],
 })
 export class AccountsModule {}

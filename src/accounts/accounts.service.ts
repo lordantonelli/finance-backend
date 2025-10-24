@@ -1,4 +1,4 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { BaseService } from '@shared/services/base.service';
 import { Account } from './entities/account.entity';
 import { AppContextService } from '@shared/services/app-context.service';
@@ -6,7 +6,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AccountHasTransactionsException } from '@exceptions/account-has-transactions.exception';
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable()
 export class AccountsService extends BaseService<Account> {
   constructor(
     @InjectRepository(Account)
@@ -40,5 +40,17 @@ export class AccountsService extends BaseService<Account> {
     }
 
     await super.remove(id);
+  }
+
+  async updateBalance(
+    idOrAccount: number | Account,
+    amount: number,
+  ): Promise<Account> {
+    const account =
+      typeof idOrAccount === 'number'
+        ? await this.findOne(idOrAccount)
+        : idOrAccount;
+    account.currentBalance += amount;
+    return this.repository.save(account);
   }
 }

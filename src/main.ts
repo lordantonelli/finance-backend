@@ -30,7 +30,9 @@ async function bootstrap() {
     extraModels: [StandardErrorResponse, ValidationErrorDetail],
   });
 
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('api', app, document, {
+    customCssUrl: '/css/swagger-ui-themes/themes/3.x/theme-flattop.css',
+  });
 
   app.enableCors();
   app.useGlobalFilters(new HttpExceptionFilter());
@@ -48,4 +50,4 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+void bootstrap();

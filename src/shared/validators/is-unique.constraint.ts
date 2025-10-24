@@ -30,14 +30,6 @@ export class IsUniqueConstraint implements ValidatorConstraintInterface {
     // catch options from decorator
     const [EntityClass, findCondition = args.property] = args.constraints;
 
-    if (Array.isArray(findCondition))
-      console.log(
-        findCondition.reduce((acc, curr) => {
-          acc[curr] = args.object[curr];
-          return acc;
-        }, {} as FindOptionsWhere<E>),
-      );
-
     // database query check data is exists
     const count = await this.entityManager.getRepository(EntityClass).count({
       where:
@@ -54,7 +46,6 @@ export class IsUniqueConstraint implements ValidatorConstraintInterface {
                 [findCondition || args.property]: value,
               },
     });
-    console.log(count);
     return count == 0;
   }
 
