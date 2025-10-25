@@ -12,7 +12,16 @@ import { GoalType } from 'src/goals/entities/goal-type.enum';
 import { StartBeforeOrEqualEnd } from '@shared/decorators';
 
 export class CreateGoalDto {
-  @ApiProperty({ description: 'Type of the goal', enum: GoalType })
+  @ApiProperty({
+    description:
+      'Type of the goal:' +
+      'POUPANCA (accumulated balance = previous balance + income - expenses), ' +
+      'INVESTIMENTO (sum of transactions in "Investimentos" category and subcategories), ' +
+      'DIVIDA (net balance of period = income - expenses), ' +
+      'COMPRA (sum of transactions in "Compras" category and subcategories), ' +
+      'ORCAMENTO (total expenses in period)',
+    enum: GoalType,
+  })
   @IsEnum(GoalType)
   type: GoalType;
 

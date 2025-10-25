@@ -10,6 +10,8 @@ import {
   MonthlySummaryItemDto,
 } from './dto/monthly-summary.dto';
 import { AppContextService } from '@shared/services/app-context.service';
+import { GoalProgressReportDto } from './dto/goal-progress-report.dto';
+import { GoalsService } from 'src/goals/goals.service';
 
 @Injectable()
 export class ReportsService {
@@ -17,6 +19,7 @@ export class ReportsService {
     private readonly accountsService: AccountsService,
     private readonly transactionsService: TransactionsService,
     private readonly appContext: AppContextService,
+    private readonly goalsService: GoalsService,
   ) {}
 
   async generatePeriodReport(
@@ -581,5 +584,42 @@ export class ReportsService {
       totalSavings,
       accounts,
     };
+  }
+
+  async getProgressReport(): Promise<GoalProgressReportDto[]> {
+    const userId = this.appContext.currentUserId;
+    const goals = await this.goalsService.getRepository().find({
+      where: { user: { id: userId } },
+      order: { startDate: 'ASC' },
+    });
+
+    const today = new Date();
+    const reports = await Promise.all(
+      goals.map(async (goal) => {
+        const accumulatedValue =
+          await this.goalsService.calculateAccumulatedValue(goal);
+        const progressPercentage = Math.min(
+          100,
+          Math.round((accumulatedValue / goal.targetValue) * 100),
+        );
+        const remainingValue = Math.max(0, goal.targetValue - accumulatedValue);
+        const status = this.goalsService.calculateStatus(
+          goal,
+          accumulatedValue,
+          today,
+        );
+
+        return {
+          goal,
+          targetValue: goal.targetValue,
+          accumulatedValue,
+          progressPercentage,
+          status,
+          remainingValue,
+        };
+      }),
+    );
+
+    return reports;
   }
 }

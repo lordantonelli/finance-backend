@@ -5,9 +5,15 @@ import { GoalType } from '../entities/goal-type.enum';
 
 export class QueryTypeListDto extends QueryActiveListDto {
   @ApiProperty({
-    required: false,
-    description: 'Filter by goal type',
+    description:
+      'filter by type of the goal:' +
+      'POUPANCA (accumulated balance = previous balance + income - expenses), ' +
+      'INVESTIMENTO (sum of transactions in "Investimentos" category and subcategories), ' +
+      'DIVIDA (net balance of period = income - expenses), ' +
+      'COMPRA (sum of transactions in "Compras" category and subcategories), ' +
+      'ORCAMENTO (total expenses in period)',
     enum: GoalType,
+    required: false,
   })
   @IsOptional()
   @IsEnum(GoalType)

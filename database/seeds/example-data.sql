@@ -579,4 +579,66 @@ VALUES
         7
     );
 
+/* ==========================
+Goals (belong to Alice)
+========================== */
+-- GoalType: POUPANCA, DIVIDA, COMPRA, ORCAMENTO, INVESTIMENTO
+-- Table columns inferred from entity: id, type, targetValue, startDate, endDate, description, userId
+INSERT INTO
+    "goal" (
+        id,
+        type,
+        targetValue,
+        startDate,
+        endDate,
+        description,
+        userId
+    )
+VALUES
+    (
+        1,
+        'POUPANCA',
+        5000.00,
+        '2025-01-01',
+        '2025-06-30',
+        'Reserva de emergência',
+        1
+    ),
+    (
+        2,
+        'DIVIDA',
+        1500.00,
+        '2025-02-01',
+        '2025-04-30',
+        'Quitar dívida do cartão',
+        1
+    ),
+    (
+        3,
+        'COMPRA',
+        7000.00,
+        '2025-03-01',
+        '2025-08-31',
+        'Comprar notebook',
+        1
+    ),
+    (
+        4,
+        'ORCAMENTO',
+        1200.00,
+        '2025-04-01',
+        '2025-04-30',
+        'Gastos com alimentação (Abril)',
+        1
+    ),
+    (
+        5,
+        'INVESTIMENTO',
+        3000.00,
+        '2025-01-01',
+        '2025-03-31',
+        'Aportes no 1º trimestre',
+        1
+    );
+
 COMMIT;

@@ -13,7 +13,14 @@ import { QueryListDto } from '../dto/query-list.dto';
 import { User } from 'src/auth/users/entities/user.entity';
 import { ForbiddenException } from '@nestjs/common';
 import { AppContextService } from './app-context.service';
-import { isArray, isEmpty, isNotEmptyObject, isObject } from 'class-validator';
+import {
+  isArray,
+  isEmpty,
+  isNotEmpty,
+  isNotEmptyObject,
+  isObject,
+  isString,
+} from 'class-validator';
 
 export abstract class BaseService<Entity extends ObjectLiteral> {
   private readonly primaryColumnName: string;
@@ -42,7 +49,24 @@ export abstract class BaseService<Entity extends ObjectLiteral> {
   }
 
   protected isOwner(resource: Entity, ownerField: string = 'user'): boolean {
-    return resource[ownerField] === this.currentUserId;
+    const res = resource as unknown as Record<string, unknown>;
+    const owner = res ? res[ownerField] : undefined;
+    // Owner can be an object with id or a primitive id (number)
+    if (!owner) return false;
+    if (
+      typeof owner === 'object' &&
+      owner !== null &&
+      Object.prototype.hasOwnProperty.call(
+        owner as Record<string, unknown>,
+        'id',
+      )
+    ) {
+      return (owner as { id: number }).id === this.currentUserId;
+    }
+    if (typeof owner === 'number') {
+      return owner === this.currentUserId;
+    }
+    return false;
   }
 
   protected isOwnerFilterEnabled(): boolean {
@@ -150,45 +174,16 @@ export abstract class BaseService<Entity extends ObjectLiteral> {
     const defaultField = options?.defaultField ?? this.primaryColumnName;
     const defaultDirection = options?.defaultDirection ?? 'DESC';
 
-    const q = query as unknown as Record<string, unknown>;
-
-    // Try different naming conventions
-    const rawField =
-      (q['orderField'] as string) ||
-      (q['sortField'] as string) ||
-      (q['orderBy'] as string) ||
-      (q['sortBy'] as string) ||
-      undefined;
-
-    const rawDirection =
-      (q['orderDirection'] as string) ||
-      (q['sortDirection'] as string) ||
-      (q['direction'] as string) ||
-      (q['order'] as string) ||
-      undefined;
-
     let field = defaultField;
     let direction: 'ASC' | 'DESC' = defaultDirection;
     let found = false;
 
-    // Case 1: standalone sort string e.g., "-date" or "+name" or "date"
-    const sort = (q['sort'] as string) || (q['order'] as string);
-    if (typeof sort === 'string' && sort.trim().length > 0) {
-      const trimmed = sort.trim();
-      if (trimmed.startsWith('-')) direction = 'DESC';
-      else direction = 'ASC';
-      const key = trimmed.replace(/^[-+]/, '');
-      if (key) field = key;
+    if (isNotEmpty(query.orderBy) && isString(query.orderBy)) {
+      field = query.orderBy;
       found = true;
     }
-
-    // Case 2: explicit field + direction
-    if (rawField && typeof rawField === 'string') {
-      field = rawField;
-      found = true;
-    }
-    if (rawDirection && typeof rawDirection === 'string') {
-      const dir = rawDirection.toUpperCase();
+    if (isNotEmpty(query.order) && isString(query.order)) {
+      const dir = query.order.toUpperCase();
       if (dir === 'ASC' || dir === 'DESC') direction = dir;
       found = true;
     }
@@ -204,9 +199,22 @@ export abstract class BaseService<Entity extends ObjectLiteral> {
   }
 
   async findOne(id: number, relations: string[] = []): Promise<Entity> {
-    const where = { [this.primaryColumnName]: id } as FindOptionsWhere<Entity>;
+    const where = {
+      [this.primaryColumnName]: id,
+    } as FindOptionsWhere<Entity> & {
+      user?: { id: number };
+    };
+
+    // Enforce ownership at query level when owner filter is enabled
+    if (this.isOwnerFilterEnabled()) {
+      relations.push('user');
+      where.user = { id: this.currentUserId };
+    }
+
     const record = await this.repository.findOne({ where, relations });
     if (!record) throw new RecordNotFoundException();
+
+    // Extra safety: if owner filter is enabled but relation wasn't loaded, still verify if possible
     if (this.isOwnerFilterEnabled() && !this.isOwner(record)) {
       throw new ForbiddenException('You do not have access to this resource');
     }

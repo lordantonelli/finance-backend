@@ -11,6 +11,7 @@ import { PeriodReportDto } from './dto/period-report.dto';
 import { MonthlySummaryDto } from './dto/monthly-summary.dto';
 import { MonthlySummaryQueryDto } from './dto/monthly-summary.query.dto';
 import { FilterByOwner } from '@shared/decorators';
+import { GoalProgressReportDto } from './dto/goal-progress-report.dto';
 
 @ApiTags('Reports')
 @ApiBearerAuth('access-token')
@@ -19,7 +20,7 @@ import { FilterByOwner } from '@shared/decorators';
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
-  @Get('period')
+  @Get('transactions/period')
   @ApiOperation({
     summary: 'Generate period report for an account',
     description:
@@ -39,7 +40,7 @@ export class ReportsController {
     );
   }
 
-  @Get('monthly')
+  @Get('transactions/monthly')
   @ApiOperation({
     summary: 'Monthly income/expenses summary',
     description:
@@ -54,5 +55,16 @@ export class ReportsController {
       query.endMonth,
       query.accountId,
     );
+  }
+
+  @ApiOkResponse({ type: [GoalProgressReportDto] })
+  @ApiOperation({
+    summary: 'Get progress report for all goals',
+    description:
+      'Returns a detailed progress report for each goal, including accumulated value, target value, progress percentage, and current status',
+  })
+  @Get('golas/progress')
+  async getProgressReport(): Promise<GoalProgressReportDto[]> {
+    return this.reportsService.getProgressReport();
   }
 }
