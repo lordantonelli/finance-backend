@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsDateString,
+  IsDate,
   IsNotEmpty,
   IsNumber,
   IsObject,
@@ -38,7 +38,7 @@ export class CreateTransactionDto {
     type: 'string',
     format: 'date',
   })
-  @IsDateString()
+  @IsDate()
   @MaxDate(new Date())
   @IsNotEmpty()
   date: Date;

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsDateString,
+  IsDate,
   IsNotEmpty,
   IsObject,
   IsPositive,
@@ -48,7 +48,7 @@ export class CreateTransferDto {
     type: 'string',
     format: 'date',
   })
-  @IsDateString()
+  @IsDate()
   @MaxDate(new Date())
   @IsNotEmpty()
   date: Date;

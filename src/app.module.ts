@@ -11,6 +11,7 @@ import { AccountsModule } from './accounts/accounts.module';
 import { CategoriesModule } from './categories/categories.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { ReportsModule } from './reports/reports.module';
+import { GoalsModule } from './goals/goals.module';
 
 @Module({
   imports: [
@@ -20,22 +21,17 @@ import { ReportsModule } from './reports/reports.module';
       database: 'database/finance.db',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
-      logging: true,
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
     }),
-    // // Serve Swagger UI themes copied to dist via Nest assets config
-    // ServeStaticModule.forRoot({
-    //   rootPath: join(__dirname, '..', 'swagger-ui-themes', 'themes', '3.x'),
-    //   serveRoot: '/swagger-ui-themes/themes/3.x',
-    // }),
     SharedModule,
     AuthModule,
     AccountsModule,
     CategoriesModule,
     TransactionsModule,
     ReportsModule,
+    GoalsModule,
   ],
   controllers: [],
   providers: [{ provide: APP_GUARD, useClass: JwtAuthGuard }],
