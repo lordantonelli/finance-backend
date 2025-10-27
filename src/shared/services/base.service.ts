@@ -80,7 +80,10 @@ export abstract class BaseService<Entity extends ObjectLiteral> {
 
   async findAll(
     query: QueryListDto,
-    optionsFn: (search: string, query: QueryListDto) => FindManyOptions<Entity>,
+    optionsFn: (
+      search: string | undefined | null,
+      query: QueryListDto,
+    ) => FindManyOptions<Entity>,
   ): Promise<Pagination<Entity>> {
     // Generate base query options from the provided function
     const options = optionsFn(query.search, query);
