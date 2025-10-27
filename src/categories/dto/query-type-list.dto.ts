@@ -6,7 +6,7 @@ import { QueryActiveListDto } from '@shared/dto/query-active-list.dto';
 export class QueryTypeListDto extends QueryActiveListDto {
   @ApiProperty({
     required: false,
-    description: 'Filter by category type',
+    description: 'Filter by category type (INCOME/EXPENSE)',
     enum: CategoryType,
   })
   @IsOptional()

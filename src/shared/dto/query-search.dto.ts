@@ -1,10 +1,14 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
-import { IPaginationOptions } from 'nestjs-typeorm-paginate';
+import { IsOptional, IsString } from 'class-validator';
 
 export class QuerySearchDto {
-  @ApiPropertyOptional({ description: 'Search term for filtering results' })
+  @ApiPropertyOptional({
+    description:
+      'Search term for filtering results (case-insensitive partial match)',
+    required: false,
+    type: String,
+  })
   @IsString()
   @IsOptional()
-  search: string;
+  search?: string;
 }

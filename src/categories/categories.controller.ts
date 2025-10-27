@@ -17,6 +17,8 @@ import {
   ApiNoContentResponse,
   ApiOkResponse,
   ApiTags,
+  ApiOperation,
+  ApiParam,
 } from '@nestjs/swagger';
 import { ApiPaginatedResponse, FilterByOwner } from '@shared/decorators';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -33,24 +35,45 @@ import { QueryTypeListDto } from './dto/query-type-list.dto';
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
+  @ApiOperation({
+    summary: 'Create category',
+    description:
+      'Creates a new transaction category for the authenticated user.',
+  })
   @ApiCreatedResponse({ type: Category })
   @Post()
   create(@Body() createCategoryDto: CreateCategoryDto) {
     return this.categoriesService.create(createCategoryDto);
   }
 
+  @ApiOperation({
+    summary: 'List categories',
+    description:
+      'Returns categories for the authenticated user with pagination and optional filters.',
+  })
   @ApiPaginatedResponse(Category)
   @Get()
   findAll(@Query() query: QueryTypeListDto) {
     return this.categoriesService.findAll(query, this.searchCondition);
   }
 
+  @ApiOperation({
+    summary: 'Get category',
+    description:
+      'Retrieves a specific category by ID (must belong to the authenticated user).',
+  })
+  @ApiParam({ name: 'id', type: Number, description: 'Category ID' })
   @ApiOkResponse({ type: Category })
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.categoriesService.findOne(id);
   }
 
+  @ApiOperation({
+    summary: 'Update category',
+    description: 'Updates a category for the authenticated user.',
+  })
+  @ApiParam({ name: 'id', type: Number, description: 'Category ID' })
   @ApiOkResponse({ type: Category })
   @Patch(':id')
   update(
@@ -60,6 +83,11 @@ export class CategoriesController {
     return this.categoriesService.update(id, updateCategoryDto);
   }
 
+  @ApiOperation({
+    summary: 'Delete category',
+    description: 'Deletes a category belonging to the authenticated user.',
+  })
+  @ApiParam({ name: 'id', type: Number, description: 'Category ID' })
   @ApiNoContentResponse({ description: 'No content' })
   @Delete(':id')
   @HttpCode(204)

@@ -20,6 +20,8 @@ import {
   ApiNoContentResponse,
   ApiOkResponse,
   ApiTags,
+  ApiOperation,
+  ApiParam,
 } from '@nestjs/swagger';
 import { QueryListDto } from '@shared/dto/query-list.dto';
 import { User } from './entities/user.entity';
@@ -29,6 +31,10 @@ import { User } from './entities/user.entity';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @ApiOperation({
+    summary: 'Create user',
+    description: 'Creates a new user account (public endpoint).',
+  })
   @ApiCreatedResponse({ type: User })
   @IsPublic()
   @Post()
@@ -36,6 +42,11 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  @ApiOperation({
+    summary: 'List users',
+    description:
+      'Returns all users with pagination and optional search filters.',
+  })
   @Get()
   findAll(@Query() query: QueryListDto) {
     return this.usersService.findAll(query, (search) => {
@@ -43,12 +54,22 @@ export class UsersController {
     });
   }
 
+  @ApiOperation({
+    summary: 'Get user',
+    description: 'Retrieves a specific user by ID.',
+  })
+  @ApiParam({ name: 'id', type: Number, description: 'User ID' })
   @ApiOkResponse({ type: User })
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findOne(id);
   }
 
+  @ApiOperation({
+    summary: 'Update user',
+    description: 'Updates user information.',
+  })
+  @ApiParam({ name: 'id', type: Number, description: 'User ID' })
   @ApiOkResponse({ type: User })
   @Patch(':id')
   update(
@@ -58,6 +79,11 @@ export class UsersController {
     return this.usersService.update(id, updateUserDto);
   }
 
+  @ApiOperation({
+    summary: 'Delete user',
+    description: 'Deletes a user account.',
+  })
+  @ApiParam({ name: 'id', type: Number, description: 'User ID' })
   @ApiNoContentResponse({ description: 'No content' })
   @Delete(':id')
   @HttpCode(204)
@@ -65,9 +91,15 @@ export class UsersController {
     return this.usersService.remove(id);
   }
 
+  @ApiOperation({
+    summary: 'Check email existence',
+    description:
+      'Checks if an email address is already registered (public endpoint).',
+  })
+  @ApiParam({ name: 'email', type: String, description: 'Email address' })
   @ApiOkResponse({
     schema: { example: { exists: true } },
-    description: 'Check if email exists',
+    description: 'Email existence status',
   })
   @IsPublic()
   @Get('exists/:email')

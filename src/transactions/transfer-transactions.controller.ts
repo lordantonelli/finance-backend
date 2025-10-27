@@ -17,6 +17,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiParam,
 } from '@nestjs/swagger';
 import { Transaction } from './entities/transaction.entity';
 import { ApiPaginatedResponse } from '@shared/decorators';
@@ -27,7 +28,7 @@ import {
   MoreThanOrEqual,
 } from 'typeorm';
 import { isDefined, isNotEmpty } from 'class-validator';
-import { TransactionQueryListDto } from './dto/transaction-query-list.dto';
+import { TransferTransactionQueryListDto } from './dto/transfer-transaction-query-list.dto';
 import { CreateTransferDto } from './dto/create-transfer.dto';
 import { UpdateTransferDto } from './dto/update-transfer.dto';
 import { TransferTransaction } from './entities/transfer-transaction.entity';
@@ -42,7 +43,7 @@ export class TransferTransactionsController {
   ) {}
 
   @ApiOperation({
-    summary: 'Create a transfer between accounts',
+    summary: 'Create transfer',
     description:
       'Creates a transfer transaction moving funds from one account to another. Both accounts must belong to the authenticated user.',
   })
@@ -55,7 +56,11 @@ export class TransferTransactionsController {
     return this.transactionsService.create(createTransferDto);
   }
 
-  @ApiOperation({ summary: 'Update a transfer between accounts' })
+  @ApiOperation({
+    summary: 'Update transfer',
+    description: 'Updates a transfer transaction between accounts.',
+  })
+  @ApiParam({ name: 'id', type: Number, description: 'Transfer ID' })
   @ApiOkResponse({
     description: 'Transfer updated successfully',
     type: TransferTransaction,
@@ -68,20 +73,34 @@ export class TransferTransactionsController {
     return this.transactionsService.update(id, updateTransferDto);
   }
 
+  @ApiOperation({
+    summary: 'List transfers',
+    description:
+      'Returns transfer transactions between accounts with pagination and optional filters.',
+  })
   @ApiPaginatedResponse(Transaction)
   @Get()
-  findAll(@Query() query: TransactionQueryListDto) {
+  findAll(@Query() query: TransferTransactionQueryListDto) {
     return this.transactionsService.findAll(query, this.searchCondition);
   }
 
+  @ApiOperation({
+    summary: 'Get transfer',
+    description: 'Retrieves a specific transfer transaction by ID.',
+  })
+  @ApiParam({ name: 'id', type: Number, description: 'Transfer ID' })
   @ApiOkResponse({ type: Transaction })
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.transactionsService.findOne(id);
   }
 
-  @ApiOperation({ summary: 'Delete a transfer between accounts' })
+  @ApiOperation({
+    summary: 'Delete transfer',
+    description: 'Deletes a transfer transaction between accounts.',
+  })
   @ApiNoContentResponse({ description: 'No content' })
+  @ApiParam({ name: 'id', type: Number, description: 'Transfer ID' })
   @Delete(':id')
   @HttpCode(204)
   removeTransfer(@Param('id', ParseIntPipe) id: number) {
@@ -90,7 +109,7 @@ export class TransferTransactionsController {
 
   private searchCondition = (
     search: string,
-    query: TransactionQueryListDto,
+    query: TransferTransactionQueryListDto,
   ): FindManyOptions<Transaction> => {
     const where = {};
     if (isNotEmpty(search)) where['name'] = ILike(`%${search}%`);

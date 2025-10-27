@@ -7,11 +7,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiPaginatedResponse,
-  CurrentUser,
-  IsPublic,
-} from '@shared/decorators';
+import { CurrentUser, IsPublic } from '@shared/decorators';
 
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
@@ -21,6 +17,9 @@ import {
   ApiBody,
   ApiOkResponse,
   ApiTags,
+  ApiOperation,
+  ApiUnauthorizedResponse,
+  ApiBadRequestResponse,
 } from '@nestjs/swagger';
 import { LoginDto } from './models/login.dto';
 
@@ -29,6 +28,11 @@ import { LoginDto } from './models/login.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @ApiOperation({
+    summary: 'Login',
+    description: 'Authenticates a user and returns a JWT access token.',
+  })
+  @ApiBadRequestResponse({ description: 'Invalid credentials' })
   @ApiBody({ type: LoginDto })
   @ApiOkResponse({ type: UserToken })
   @IsPublic()
@@ -39,6 +43,11 @@ export class AuthController {
     return this.authService.login(user);
   }
 
+  @ApiOperation({
+    summary: 'Get current user',
+    description: 'Returns the currently authenticated user information.',
+  })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   @ApiOkResponse({ type: User })
   @ApiBearerAuth('access-token')
   @Get('me')

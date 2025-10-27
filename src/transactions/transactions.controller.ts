@@ -19,6 +19,8 @@ import {
   ApiNoContentResponse,
   ApiOkResponse,
   ApiTags,
+  ApiOperation,
+  ApiParam,
 } from '@nestjs/swagger';
 import { Transaction } from './entities/transaction.entity';
 import { ApiPaginatedResponse } from '@shared/decorators';
@@ -29,7 +31,7 @@ import {
   MoreThanOrEqual,
 } from 'typeorm';
 import { isDefined, isNotEmpty } from 'class-validator';
-import { TransactionQueryListDto } from './dto/transaction-query-list.dto';
+import { StandardTransactionQueryListDto } from './dto/standard-transaction-query-list.dto';
 
 @ApiTags('Transactions')
 @ApiBearerAuth('access-token')
@@ -37,24 +39,44 @@ import { TransactionQueryListDto } from './dto/transaction-query-list.dto';
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
+  @ApiOperation({
+    summary: 'Create transaction',
+    description: 'Creates a new income or expense transaction.',
+  })
   @ApiCreatedResponse({ type: Transaction })
   @Post()
   create(@Body() createTransactionDto: CreateTransactionDto) {
     return this.transactionsService.create(createTransactionDto);
   }
 
+  @ApiOperation({
+    summary: 'List transactions',
+    description:
+      'Returns transactions (income/expense) for the authenticated user with pagination and optional filters.',
+  })
   @ApiPaginatedResponse(Transaction)
   @Get()
-  findAll(@Query() query: TransactionQueryListDto) {
+  findAll(@Query() query: StandardTransactionQueryListDto) {
     return this.transactionsService.findAll(query, this.searchCondition);
   }
 
+  @ApiOperation({
+    summary: 'Get transaction',
+    description:
+      'Retrieves a specific transaction by ID (must belong to the authenticated user).',
+  })
+  @ApiParam({ name: 'id', type: Number, description: 'Transaction ID' })
   @ApiOkResponse({ type: Transaction })
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.transactionsService.findOne(id);
   }
 
+  @ApiOperation({
+    summary: 'Update transaction',
+    description: 'Updates a transaction for the authenticated user.',
+  })
+  @ApiParam({ name: 'id', type: Number, description: 'Transaction ID' })
   @ApiOkResponse({ type: Transaction })
   @Patch(':id')
   update(
@@ -64,6 +86,12 @@ export class TransactionsController {
     return this.transactionsService.update(id, updateTransactionDto);
   }
 
+  @ApiOperation({
+    summary: 'Delete transaction',
+    description:
+      'Deletes a transaction (income/expense) for the authenticated user.',
+  })
+  @ApiParam({ name: 'id', type: Number, description: 'Transaction ID' })
   @ApiNoContentResponse({ description: 'No content' })
   @Delete(':id')
   @HttpCode(204)
@@ -73,7 +101,7 @@ export class TransactionsController {
 
   private searchCondition = (
     search: string,
-    query: TransactionQueryListDto,
+    query: StandardTransactionQueryListDto,
   ): FindManyOptions<Transaction> => {
     const where = {};
     if (isNotEmpty(search)) where['name'] = ILike(`%${search}%`);

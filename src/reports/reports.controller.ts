@@ -22,9 +22,9 @@ export class ReportsController {
 
   @Get('transactions/period')
   @ApiOperation({
-    summary: 'Generate period report for an account',
+    summary: 'Generate account period report',
     description:
-      'Generates a financial report for a specific account and period, including totals by category, previous balance, current balance, and savings',
+      'Generates a comprehensive financial report for a specific account and time period, including category breakdowns, balance changes, and savings calculations.',
   })
   @ApiOkResponse({
     description: 'Period report generated successfully',
@@ -42,9 +42,9 @@ export class ReportsController {
 
   @Get('transactions/monthly')
   @ApiOperation({
-    summary: 'Monthly income/expenses summary',
+    summary: 'Get monthly summary',
     description:
-      'Returns totals of income and expenses per month, monthly balance (income - expenses), and accumulated balance. Filter by startMonth and endMonth (YYYY-MM).',
+      'Returns aggregated income and expenses per month with monthly balance (income - expenses) and accumulated balance. Filter by date range using startMonth and endMonth (YYYY-MM format).',
   })
   @ApiOkResponse({ description: 'Monthly summary', type: MonthlySummaryDto })
   async getMonthlySummary(
@@ -59,11 +59,11 @@ export class ReportsController {
 
   @ApiOkResponse({ type: [GoalProgressReportDto] })
   @ApiOperation({
-    summary: 'Get progress report for all goals',
+    summary: 'Get goals progress report',
     description:
-      'Returns a detailed progress report for each goal, including accumulated value, target value, progress percentage, and current status',
+      'Returns a detailed progress report for all user goals, including accumulated value, target value, progress percentage, and current status for each goal type.',
   })
-  @Get('golas/progress')
+  @Get('goals/progress')
   async getProgressReport(): Promise<GoalProgressReportDto[]> {
     return this.reportsService.getProgressReport();
   }

@@ -20,6 +20,8 @@ import {
   ApiNoContentResponse,
   ApiOkResponse,
   ApiTags,
+  ApiOperation,
+  ApiParam,
 } from '@nestjs/swagger';
 import { Account } from './entities/account.entity';
 import { QueryActiveListDto } from '@shared/dto/query-active-list.dto';
@@ -33,24 +35,44 @@ import { isDefined, isNotEmpty } from 'class-validator';
 export class AccountsController {
   constructor(private readonly accountsService: AccountsService) {}
 
+  @ApiOperation({
+    summary: 'Create account',
+    description: 'Creates a new financial account for the authenticated user.',
+  })
   @ApiCreatedResponse({ type: Account })
   @Post()
   create(@Body() createAccountDto: CreateAccountDto) {
     return this.accountsService.create(createAccountDto);
   }
 
+  @ApiOperation({
+    summary: 'List accounts',
+    description:
+      'Returns accounts for the authenticated user with pagination and optional filters.',
+  })
   @ApiPaginatedResponse(Account)
   @Get()
   findAll(@Query() query: QueryActiveListDto) {
     return this.accountsService.findAll(query, this.searchCondition);
   }
 
+  @ApiOperation({
+    summary: 'Get account',
+    description:
+      'Retrieves a specific account by ID (must belong to the authenticated user).',
+  })
+  @ApiParam({ name: 'id', type: Number, description: 'Account ID' })
   @ApiOkResponse({ type: Account })
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.accountsService.findOne(id);
   }
 
+  @ApiOperation({
+    summary: 'Update account',
+    description: 'Updates account information for the authenticated user.',
+  })
+  @ApiParam({ name: 'id', type: Number, description: 'Account ID' })
   @ApiOkResponse({ type: Account })
   @Patch(':id')
   update(
@@ -60,6 +82,11 @@ export class AccountsController {
     return this.accountsService.update(id, updateAccountDto);
   }
 
+  @ApiOperation({
+    summary: 'Delete account',
+    description: 'Deletes an account belonging to the authenticated user.',
+  })
+  @ApiParam({ name: 'id', type: Number, description: 'Account ID' })
   @ApiNoContentResponse({ description: 'No content' })
   @Delete(':id')
   @HttpCode(204)
