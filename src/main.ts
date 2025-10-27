@@ -33,7 +33,7 @@ async function bootstrap() {
   // Add global error responses to all endpoints
   addGlobalErrorResponses(document);
 
-  SwaggerModule.setup('api', app, document, {
+  SwaggerModule.setup('docs', app, document, {
     customCssUrl: '/css/swagger-ui-themes/themes/3.x/theme-flattop.css',
   });
 

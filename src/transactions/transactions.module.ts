@@ -1,14 +1,16 @@
-import { Module } from '@nestjs/common';
-import { TransactionsService } from './transactions.service';
-import { TransactionsController } from './transactions.controller';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Transaction } from './entities/transaction.entity';
 import { SharedModule } from '@shared/shared.module';
-import { AccountsModule } from 'src/accounts/accounts.module';
+import { Transaction } from './entities/transaction.entity';
 import { StandardTransaction } from './entities/standard-transaction.entity';
 import { TransferTransaction } from './entities/transfer-transaction.entity';
-import { TransferTransactionsController } from './transfer-transactions.controller';
+import { AccountsModule } from 'src/accounts/accounts.module';
+import { StandardTransactionsService } from './standard-transactions.service';
+import { StandardTransactionsController } from './standard-transactions.controller';
 import { TransferTransactionsService } from './transfer-transactions.service';
+import { TransferTransactionsController } from './transfer-transactions.controller';
+import { TransactionsService } from './transactions.service';
+import { TransactionsController } from './transactions.controller';
 
 @Module({
   imports: [
@@ -18,10 +20,22 @@ import { TransferTransactionsService } from './transfer-transactions.service';
       TransferTransaction,
     ]),
     SharedModule,
-    AccountsModule,
+    forwardRef(() => AccountsModule),
   ],
-  controllers: [TransferTransactionsController, TransactionsController],
-  providers: [TransferTransactionsService, TransactionsService],
-  exports: [TransferTransactionsService, TransactionsService],
+  controllers: [
+    TransactionsController,
+    TransferTransactionsController,
+    StandardTransactionsController,
+  ],
+  providers: [
+    TransactionsService,
+    StandardTransactionsService,
+    TransferTransactionsService,
+  ],
+  exports: [
+    TransactionsService,
+    StandardTransactionsService,
+    TransferTransactionsService,
+  ],
 })
 export class TransactionsModule {}

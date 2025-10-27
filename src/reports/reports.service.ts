@@ -4,7 +4,7 @@ import { TransferTransaction } from 'src/transactions/entities/transfer-transact
 import { PeriodReportDto, CategoryTotalDto } from './dto/period-report.dto';
 import { CategoryType } from 'src/categories/entities/category-type.enum';
 import { AccountsService } from 'src/accounts/accounts.service';
-import { TransactionsService } from '../transactions/transactions.service';
+import { StandardTransactionsService } from '../transactions/standard-transactions.service';
 import {
   MonthlySummaryDto,
   MonthlySummaryItemDto,
@@ -17,7 +17,7 @@ import { GoalsService } from 'src/goals/goals.service';
 export class ReportsService {
   constructor(
     private readonly accountsService: AccountsService,
-    private readonly transactionsService: TransactionsService,
+    private readonly standardTransactionsService: StandardTransactionsService,
     private readonly appContext: AppContextService,
     private readonly goalsService: GoalsService,
   ) {}
@@ -36,7 +36,7 @@ export class ReportsService {
       const account = await this.accountsService.findOne(accountId);
 
       // Get standard transactions within the period (joined with category)
-      const transactions = (await this.transactionsService
+      const transactions = (await this.standardTransactionsService
         .getRepository()
         .createQueryBuilder('t')
         .innerJoin('t.account', 'a')
@@ -48,7 +48,7 @@ export class ReportsService {
         .getMany()) as unknown as StandardTransaction[];
 
       // Get standard transactions before the period to calculate previous balance
-      const transactionsBeforePeriod = (await this.transactionsService
+      const transactionsBeforePeriod = (await this.standardTransactionsService
         .getRepository()
         .createQueryBuilder('t')
         .innerJoin('t.account', 'a')
@@ -59,7 +59,7 @@ export class ReportsService {
         .getMany()) as unknown as StandardTransaction[];
 
       // Also get transfer transactions before the period (affect balance only)
-      const transfersBeforePeriod = (await this.transactionsService
+      const transfersBeforePeriod = (await this.standardTransactionsService
         .getRepository()
         .createQueryBuilder('t')
         .innerJoin('t.account', 'a')
@@ -120,7 +120,7 @@ export class ReportsService {
       });
 
       // Get transfer transactions within the period to adjust current balance
-      const transfersInPeriod = (await this.transactionsService
+      const transfersInPeriod = (await this.standardTransactionsService
         .getRepository()
         .createQueryBuilder('t')
         .innerJoin('t.account', 'a')
@@ -172,7 +172,7 @@ export class ReportsService {
     let previousBalance = Number(rawInit?.sum ?? 0);
 
     // Standard transactions before the period across all accounts
-    const stdBefore = (await this.transactionsService
+    const stdBefore = (await this.standardTransactionsService
       .getRepository()
       .createQueryBuilder('t')
       .innerJoin('t.account', 'a')
@@ -193,7 +193,7 @@ export class ReportsService {
     });
 
     // Standard transactions within the period across all accounts
-    const transactions = (await this.transactionsService
+    const transactions = (await this.standardTransactionsService
       .getRepository()
       .createQueryBuilder('t')
       .innerJoin('t.account', 'a')
@@ -271,7 +271,7 @@ export class ReportsService {
     const userId = this.appContext.currentUserId;
 
     // SQLite: use strftime to group by year and month
-    const qb = this.transactionsService
+    const qb = this.standardTransactionsService
       .getRepository()
       .createQueryBuilder('t')
       .innerJoin('t.account', 'a')
@@ -355,7 +355,7 @@ export class ReportsService {
     // If a specific account is requested, compute net transfers per month for that account
     let netTransfersByMonth: Map<string, number> | undefined;
     if (accountId) {
-      const qbTransfers = this.transactionsService
+      const qbTransfers = this.standardTransactionsService
         .getRepository()
         .createQueryBuilder('t')
         .innerJoin('t.account', 'a')
@@ -404,7 +404,7 @@ export class ReportsService {
     const totalSavings = totalIncome - totalExpenses;
 
     // Per-account breakdown (optional)
-    const qbAccounts = this.transactionsService
+    const qbAccounts = this.standardTransactionsService
       .getRepository()
       .createQueryBuilder('t')
       .innerJoin('t.account', 'a')
@@ -474,7 +474,7 @@ export class ReportsService {
     }
 
     // Per-account net transfers grouped by month
-    const qbAccTransfers = this.transactionsService
+    const qbAccTransfers = this.standardTransactionsService
       .getRepository()
       .createQueryBuilder('t')
       .innerJoin('t.account', 'a')

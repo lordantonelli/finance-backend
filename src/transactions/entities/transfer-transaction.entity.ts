@@ -3,7 +3,7 @@ import { Transaction } from './transaction.entity';
 import { Account } from 'src/accounts/entities/account.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
-@ChildEntity()
+@ChildEntity('Transfer')
 export class TransferTransaction extends Transaction {
   @ApiProperty({
     description: 'The destination account for the transfer',

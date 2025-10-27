@@ -6,7 +6,7 @@ import { Repository } from 'typeorm';
 import { AppContextService } from '@shared/services/app-context.service';
 import { GoalStatus } from './entities/goal-status.enum';
 import { GoalType } from './entities/goal-type.enum';
-import { TransactionsService } from '../transactions/transactions.service';
+import { StandardTransactionsService } from '../transactions/standard-transactions.service';
 import { CategoryType } from 'src/categories/entities/category-type.enum';
 import { StandardTransaction } from 'src/transactions/entities/standard-transaction.entity';
 import { AccountsService } from 'src/accounts/accounts.service';
@@ -19,8 +19,8 @@ export class GoalsService extends BaseService<Goal> {
     @InjectRepository(Goal)
     protected readonly repository: Repository<Goal>,
     protected appContext: AppContextService,
-    @Inject(forwardRef(() => TransactionsService))
-    private readonly transactionsService: TransactionsService,
+    @Inject(forwardRef(() => StandardTransactionsService))
+    private readonly standardTransactionsService: StandardTransactionsService,
     private readonly accountsService: AccountsService,
     private readonly categoriesService: CategoriesService,
   ) {
@@ -38,7 +38,7 @@ export class GoalsService extends BaseService<Goal> {
       today.getTime() < goal.endDate.getTime() ? today : goal.endDate;
 
     // Get standard transactions in the goal period
-    const transactions = (await this.transactionsService
+    const transactions = (await this.standardTransactionsService
       .getRepository()
       .createQueryBuilder('t')
       .innerJoin('t.account', 'a')
@@ -67,7 +67,7 @@ export class GoalsService extends BaseService<Goal> {
           .getRawOne<{ sum: string }>();
         let previousBalance = Number(rawInit?.sum ?? 0);
 
-        const stdBefore = (await this.transactionsService
+        const stdBefore = (await this.standardTransactionsService
           .getRepository()
           .createQueryBuilder('t')
           .innerJoin('t.account', 'a')

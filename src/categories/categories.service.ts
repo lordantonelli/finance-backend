@@ -8,7 +8,7 @@ import { DefaultCategoryCannotBeModified } from '@exceptions/default-category-ca
 import { CategoryHasTransactionsException } from '@exceptions/category-has-transactions.exception';
 import { User } from 'src/auth/users/entities/user.entity';
 import { CategoryType } from './entities/category-type.enum';
-import { TransactionsService } from '../transactions/transactions.service';
+import { StandardTransactionsService } from '../transactions/standard-transactions.service';
 
 @Injectable()
 export class CategoriesService extends BaseService<Category> {
@@ -16,7 +16,7 @@ export class CategoriesService extends BaseService<Category> {
     @InjectRepository(Category)
     protected readonly repository: Repository<Category>,
     protected appContext: AppContextService,
-    private readonly transactionsService: TransactionsService,
+    private readonly standardTransactionsService: StandardTransactionsService,
   ) {
     super(repository, appContext);
   }
@@ -39,7 +39,7 @@ export class CategoriesService extends BaseService<Category> {
     }
 
     // Verifica se há transações associadas à categoria
-    const transactions = await this.transactionsService
+    const transactions = await this.standardTransactionsService
       .getRepository()
       .countBy({ category: { id } });
 

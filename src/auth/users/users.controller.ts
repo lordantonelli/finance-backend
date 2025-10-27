@@ -5,16 +5,14 @@ import {
   Get,
   HttpCode,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
-  Query,
 } from '@nestjs/common';
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
-import { IsPublic } from '@shared/decorators';
+import { CurrentUser, IsPublic } from '@shared/decorators';
 import {
   ApiCreatedResponse,
   ApiNoContentResponse,
@@ -22,8 +20,8 @@ import {
   ApiTags,
   ApiOperation,
   ApiParam,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
-import { QueryListDto } from '@shared/dto/query-list.dto';
 import { User } from './entities/user.entity';
 
 @ApiTags('Authentication')
@@ -43,52 +41,37 @@ export class UsersController {
   }
 
   @ApiOperation({
-    summary: 'List users',
-    description:
-      'Returns all users with pagination and optional search filters.',
+    summary: 'Get current user',
+    description: 'Retrieves the currently authenticated user.',
   })
-  @Get()
-  findAll(@Query() query: QueryListDto) {
-    return this.usersService.findAll(query, (search) => {
-      return { where: [{ name: `%${search}%` }, { email: `%${search}%` }] };
-    });
-  }
-
-  @ApiOperation({
-    summary: 'Get user',
-    description: 'Retrieves a specific user by ID.',
-  })
-  @ApiParam({ name: 'id', type: Number, description: 'User ID' })
+  @ApiBearerAuth('access-token')
   @ApiOkResponse({ type: User })
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.findOne(id);
+  @Get('me')
+  findMe(@CurrentUser() user: User) {
+    return user;
   }
 
   @ApiOperation({
-    summary: 'Update user',
-    description: 'Updates user information.',
+    summary: 'Update current user',
+    description: 'Updates the authenticated user information.',
   })
-  @ApiParam({ name: 'id', type: Number, description: 'User ID' })
+  @ApiBearerAuth('access-token')
   @ApiOkResponse({ type: User })
-  @Patch(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateUserDto: UpdateUserDto,
-  ) {
-    return this.usersService.update(id, updateUserDto);
+  @Patch('me')
+  updateMe(@CurrentUser() user: User, @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.update(user.id, updateUserDto);
   }
 
   @ApiOperation({
-    summary: 'Delete user',
-    description: 'Deletes a user account.',
+    summary: 'Delete current user',
+    description: 'Deletes the authenticated user account.',
   })
-  @ApiParam({ name: 'id', type: Number, description: 'User ID' })
+  @ApiBearerAuth('access-token')
   @ApiNoContentResponse({ description: 'No content' })
-  @Delete(':id')
+  @Delete('me')
   @HttpCode(204)
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.remove(id);
+  removeMe(@CurrentUser() user: User) {
+    return this.usersService.remove(user.id);
   }
 
   @ApiOperation({

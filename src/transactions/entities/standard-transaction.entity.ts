@@ -3,7 +3,7 @@ import { Transaction } from './transaction.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Category } from 'src/categories/entities/category.entity';
 
-@ChildEntity()
+@ChildEntity('Standard')
 export class StandardTransaction extends Transaction {
   @ApiProperty({
     description: 'The category associated with the transaction',

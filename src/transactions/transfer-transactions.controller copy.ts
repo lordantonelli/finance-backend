@@ -119,6 +119,9 @@ export class TransferTransactionsController {
 
     if (isDefined(query.account)) where['account'] = { id: query.account };
 
+    if (isDefined(query.toAccount))
+      where['toAccount'] = { id: query.toAccount };
+
     if (isDefined(query.startDate))
       where['date'] = MoreThanOrEqual(query.startDate);
 

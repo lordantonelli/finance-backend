@@ -1,7 +1,6 @@
 import { UserToken } from './models/user-token.model';
 import {
   Controller,
-  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -13,12 +12,10 @@ import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { User } from './users/entities/user.entity';
 import {
-  ApiBearerAuth,
   ApiBody,
   ApiOkResponse,
   ApiTags,
   ApiOperation,
-  ApiUnauthorizedResponse,
   ApiBadRequestResponse,
 } from '@nestjs/swagger';
 import { LoginDto } from './models/login.dto';
@@ -41,17 +38,5 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   login(@CurrentUser() user: User) {
     return this.authService.login(user);
-  }
-
-  @ApiOperation({
-    summary: 'Get current user',
-    description: 'Returns the currently authenticated user information.',
-  })
-  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
-  @ApiOkResponse({ type: User })
-  @ApiBearerAuth('access-token')
-  @Get('me')
-  me(@CurrentUser() user: User) {
-    return user;
   }
 }
