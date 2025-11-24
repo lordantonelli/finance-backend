@@ -14,7 +14,7 @@ import {
   ApiOperation,
   ApiParam,
 } from '@nestjs/swagger';
-import { ApiPaginatedResponse } from '@shared/decorators';
+import { ApiPaginatedResponse, FilterByOwner } from '@shared/decorators';
 import {
   FindManyOptions,
   ILike,
@@ -29,6 +29,7 @@ import { Transaction } from './entities/transaction.entity';
 
 @ApiTags('Transactions')
 @ApiBearerAuth('access-token')
+@FilterByOwner('account.user')
 @Controller('transactions')
 export class TransactionsController {
   constructor(

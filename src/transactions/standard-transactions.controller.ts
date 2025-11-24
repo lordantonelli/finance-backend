@@ -23,7 +23,7 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { Transaction } from './entities/transaction.entity';
-import { ApiPaginatedResponse } from '@shared/decorators';
+import { ApiPaginatedResponse, FilterByOwner } from '@shared/decorators';
 import {
   FindManyOptions,
   ILike,
@@ -35,6 +35,7 @@ import { StandardTransactionQueryListDto } from './dto/standard-transaction-quer
 
 @ApiTags('Transactions')
 @ApiBearerAuth('access-token')
+@FilterByOwner('account.user')
 @Controller('transactions/standard')
 export class StandardTransactionsController {
   constructor(

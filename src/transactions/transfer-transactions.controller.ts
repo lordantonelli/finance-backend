@@ -20,7 +20,7 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { Transaction } from './entities/transaction.entity';
-import { ApiPaginatedResponse } from '@shared/decorators';
+import { ApiPaginatedResponse, FilterByOwner } from '@shared/decorators';
 import {
   FindManyOptions,
   ILike,
@@ -36,6 +36,7 @@ import { TransferTransactionsService } from './transfer-transactions.service';
 
 @ApiTags('Transactions')
 @ApiBearerAuth('access-token')
+@FilterByOwner('account.user')
 @Controller('transactions/transfer')
 export class TransferTransactionsController {
   constructor(

@@ -1,6 +1,4 @@
-import { CurrentUser } from './../decorators/current-user.decorator';
-import { Injectable, Inject, Scope } from '@nestjs/common';
-import { REQUEST } from '@nestjs/core';
+import { Injectable } from '@nestjs/common';
 import { User } from 'src/auth/users/entities/user.entity';
 interface AppContextData {
   user?: any;

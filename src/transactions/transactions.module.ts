@@ -23,9 +23,9 @@ import { TransactionsController } from './transactions.controller';
     forwardRef(() => AccountsModule),
   ],
   controllers: [
-    TransactionsController,
     TransferTransactionsController,
     StandardTransactionsController,
+    TransactionsController,
   ],
   providers: [
     TransactionsService,

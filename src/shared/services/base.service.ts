@@ -73,6 +73,10 @@ export abstract class BaseService<Entity extends ObjectLiteral> {
     return this.appContext.getMetadata<boolean>('ownerFilterEnabled') || false;
   }
 
+  protected getOwnerField(): string {
+    return this.appContext.getMetadata<string>('ownerField') || 'user';
+  }
+
   async create(createDto: DeepPartial<Entity>): Promise<Entity> {
     const record = this.repository.create(createDto);
     return await this.repository.save(record);
@@ -126,7 +130,35 @@ export abstract class BaseService<Entity extends ObjectLiteral> {
    * Handles different where clause structures (empty, object, or array)
    */
   private applyOwnerFilter(options: FindManyOptions<Entity>): void {
-    const ownerCondition = { user: { id: this.currentUserId } };
+    const ownerField = this.getOwnerField();
+
+    const buildOwnerCondition = (
+      fieldPath: string,
+      id: number,
+    ): Record<string, any> => {
+      const parts = fieldPath.split('.');
+      return parts.reduceRight<Record<string, any>>(
+        (acc, part) => ({ [part]: acc }),
+        { id },
+      );
+    };
+
+    const setOwnerOn = (
+      target: Record<string, any>,
+      fieldPath: string,
+      id: number,
+    ) => {
+      const parts = fieldPath.split('.');
+      let cur = target;
+      for (let i = 0; i < parts.length - 1; i++) {
+        const p = parts[i];
+        if (!cur[p] || typeof cur[p] !== 'object') cur[p] = {};
+        cur = cur[p];
+      }
+      cur[parts[parts.length - 1]] = { id };
+    };
+
+    const ownerCondition = buildOwnerCondition(ownerField, this.currentUserId);
 
     // Handle empty or non-existent where clause
     if (
@@ -140,20 +172,26 @@ export abstract class BaseService<Entity extends ObjectLiteral> {
     // Handle array of conditions
     if (isArray(options.where)) {
       if (options.where.length === 0) {
-        options.where = [ownerCondition] as any;
+        options.where = [ownerCondition];
       } else {
         // Add owner filter to each condition in the array
         options.where.forEach((condition) => {
-          (condition as Record<string, any>).user = { id: this.currentUserId };
+          setOwnerOn(
+            condition as Record<string, any>,
+            ownerField,
+            this.currentUserId,
+          );
         });
       }
       return;
     }
 
     // Handle single object condition
-    (options.where as Record<string, any>).user = {
-      id: this.currentUserId,
-    } as any;
+    setOwnerOn(
+      options.where as Record<string, any>,
+      ownerField,
+      this.currentUserId,
+    );
   }
 
   /**
@@ -210,8 +248,18 @@ export abstract class BaseService<Entity extends ObjectLiteral> {
 
     // Enforce ownership at query level when owner filter is enabled
     if (this.isOwnerFilterEnabled()) {
-      relations.push('user');
-      where.user = { id: this.currentUserId };
+      const ownerField = this.getOwnerField();
+      const ownerRelation = ownerField.split('.')[0];
+      if (!relations.includes(ownerRelation)) relations.push(ownerRelation);
+      // set nested owner id on where (supports dotted path)
+      const parts = ownerField.split('.');
+      let cur: Record<string, any> = where as Record<string, any>;
+      for (let i = 0; i < parts.length - 1; i++) {
+        const p = parts[i];
+        if (!cur[p] || typeof cur[p] !== 'object') cur[p] = {};
+        cur = cur[p];
+      }
+      cur[parts[parts.length - 1]] = { id: this.currentUserId };
     }
 
     const record = await this.repository.findOne({ where, relations });
